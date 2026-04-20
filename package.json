@@ -1,0 +1,28 @@
+{
+  "name": "solidity-security-patterns",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HEO-80/solidity-security-patterns.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/HEO-80/solidity-security-patterns/issues"
+  },
+  "homepage": "https://github.com/HEO-80/solidity-security-patterns#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.4",
+    "hardhat": "^3.4.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1"
+  }
+}
