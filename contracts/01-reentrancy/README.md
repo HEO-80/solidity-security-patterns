@@ -65,3 +65,7 @@ SecureBank
 
 > **Always follow Checks → Effects → Interactions.**
 > Never make external calls before updating your state.
+
+ ejecuta: PowerShell
+
+npx hardhat test test/01-reentrancy.test.js
