@@ -1,16 +1,21 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import hre from "hardhat";
 
 describe("03 - Access Control Failure", function () {
+  let ethers;
   let Vulnerable, vulnerableContract;
   let Secure, secureContract;
   let owner, user1, user2, attacker;
+  let DEPOSIT_AMOUNT;
 
-  const DEPOSIT_AMOUNT = ethers.parseEther("5"); // 5 ETH por usuario
+  before(async function () {
+    const connection = await hre.network.getOrCreate();
+    ethers = connection.ethers;
+    DEPOSIT_AMOUNT = ethers.parseEther("5");
+    [owner, user1, user2, attacker] = await ethers.getSigners();
+  });
 
   beforeEach(async function () {
-    [owner, user1, user2, attacker] = await ethers.getSigners();
-
     // Desplegar versión Vulnerable
     Vulnerable = await ethers.getContractFactory("VaultVulnerable");
     vulnerableContract = await Vulnerable.deploy();
@@ -26,17 +31,14 @@ describe("03 - Access Control Failure", function () {
       await vulnerableContract.connect(user1).deposit({ value: DEPOSIT_AMOUNT });
       await vulnerableContract.connect(user2).deposit({ value: DEPOSIT_AMOUNT });
 
-      const vaultBalanceAntes = await ethers.provider.getBalance(vulnerableContract.target);
-      expect(vaultBalanceAntes).to.equal(ethers.parseEther("10")); // 10 ETH total
+      const vaultBalanceAntes = await ethers.provider.getBalance(await vulnerableContract.getAddress());
+      expect(vaultBalanceAntes).to.equal(ethers.parseEther("10"));
 
       // 2. El atacante llama a la función sin protección
-      // No necesita enviar ETH, solo ejecutar la función
-      await expect(
-        vulnerableContract.connect(attacker).emergencyWithdrawAll()
-      ).not.to.be.reverted;
+      await vulnerableContract.connect(attacker).emergencyWithdrawAll();
 
       // 3. Verificamos que la bóveda quedó vacía
-      const vaultBalanceDespues = await ethers.provider.getBalance(vulnerableContract.target);
+      const vaultBalanceDespues = await ethers.provider.getBalance(await vulnerableContract.getAddress());
       expect(vaultBalanceDespues).to.equal(0n);
     });
   });
@@ -47,17 +49,18 @@ describe("03 - Access Control Failure", function () {
       await secureContract.connect(user1).deposit({ value: DEPOSIT_AMOUNT });
       
       // 2. El atacante intenta vaciar la bóveda
-      await expect(
-        secureContract.connect(attacker).emergencyWithdrawAll()
-      ).to.be.revertedWith("Acceso denegado: No eres el owner");
+      try {
+        await secureContract.connect(attacker).emergencyWithdrawAll();
+        expect.fail("Debería haber revertido por falta de permisos");
+      } catch (error) {
+        expect(error.message).to.contain("Acceso denegado: No eres el owner");
+      }
 
       // 3. El Owner legítimo SÍ puede llamar a la función
-      await expect(
-        secureContract.connect(owner).emergencyWithdrawAll()
-      ).not.to.be.reverted;
+      await secureContract.connect(owner).emergencyWithdrawAll();
 
       // 4. Verificamos que los fondos se extrajeron de forma segura
-      const vaultBalanceDespues = await ethers.provider.getBalance(secureContract.target);
+      const vaultBalanceDespues = await ethers.provider.getBalance(await secureContract.getAddress());
       expect(vaultBalanceDespues).to.equal(0n);
     });
   });
