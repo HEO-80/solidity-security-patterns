@@ -14,15 +14,13 @@ describe("07 - Unchecked Return Values", function () {
   });
 
   beforeEach(async function () {
-    // 1. Desplegar los Bancos
-    const VulnerableBank = await ethers.getContractFactory("VulnerableBank");
+    const VulnerableBank = await ethers.getContractFactory("contracts/07-unchecked-return/Vulnerable.sol:VulnerableBank");
     vulnerableBank = await VulnerableBank.deploy();
 
-    const SecureBank = await ethers.getContractFactory("SecureBank");
+    const SecureBank = await ethers.getContractFactory("contracts/07-unchecked-return/Secure.sol:SecureBank");
     secureBank = await SecureBank.deploy();
 
-    // 2. Desplegar el contrato del usuario (Rejector)
-    const Rejector = await ethers.getContractFactory("Rejector");
+    const Rejector = await ethers.getContractFactory("contracts/07-unchecked-return/Vulnerable.sol:Rejector");
     rejectorContract = await Rejector.deploy();
   });
 
@@ -30,23 +28,20 @@ describe("07 - Unchecked Return Values", function () {
     it("Should deduct balance even if the Ether transfer fails", async function () {
       const depositAmount = ethers.parseEther("1");
 
-      // El Rejector deposita 1 ETH en el banco vulnerable
-      await rejectorContract.connect(user).depositTo(await vulnerableBank.getAddress(), { value: depositAmount });
+      const tx1 = await rejectorContract.connect(user).depositTo(await vulnerableBank.getAddress(), { value: depositAmount });
+      await tx1.wait(); // Asegura la actualización de estado
       
       let balanceInBank = await vulnerableBank.balances(await rejectorContract.getAddress());
       expect(balanceInBank).to.equal(depositAmount);
       console.log("    🏦 Rejector deposited 1 ETH into Vulnerable Bank.");
 
-      // El Rejector intenta retirar. El banco intentará enviarlo, pero Rejector revertirá.
-      // Como el banco ignora el error, el test continuará sin crashear.
       console.log("    🕵️  Rejector tries to withdraw. The Ether transfer fails, but the Bank ignores it...");
-      await rejectorContract.connect(user).withdrawFrom(await vulnerableBank.getAddress(), depositAmount);
+      const tx2 = await rejectorContract.connect(user).withdrawFrom(await vulnerableBank.getAddress(), depositAmount);
+      await tx2.wait(); // Asegura la actualización de estado
 
-      // Verificamos la contabilidad del banco
       balanceInBank = await vulnerableBank.balances(await rejectorContract.getAddress());
       const bankActualEtherBalance = await ethers.provider.getBalance(await vulnerableBank.getAddress());
 
-      // El sistema dice que el balance es 0, pero el ETH físico sigue dentro del banco
       expect(balanceInBank).to.equal(0n);
       expect(bankActualEtherBalance).to.equal(depositAmount);
       
@@ -58,19 +53,17 @@ describe("07 - Unchecked Return Values", function () {
     it("Should revert the whole transaction if the Ether transfer fails", async function () {
       const depositAmount = ethers.parseEther("1");
 
-      // El Rejector deposita 1 ETH en el banco seguro
-      await rejectorContract.connect(user).depositTo(await secureBank.getAddress(), { value: depositAmount });
+      const tx1 = await rejectorContract.connect(user).depositTo(await secureBank.getAddress(), { value: depositAmount });
+      await tx1.wait();
       console.log("    🏦 Rejector deposited 1 ETH into Secure Bank.");
 
-      // El Rejector intenta retirar.
       console.log("    🛡️  Rejector tries to withdraw. The Bank catches the error and blocks the state change...");
-      await rejectorContract.connect(user).withdrawFrom(await secureBank.getAddress(), depositAmount);
+      const tx2 = await rejectorContract.connect(user).withdrawFrom(await secureBank.getAddress(), depositAmount);
+      await tx2.wait();
 
-      // Verificamos la contabilidad del banco
       const balanceInBank = await secureBank.balances(await rejectorContract.getAddress());
       const bankActualEtherBalance = await ethers.provider.getBalance(await secureBank.getAddress());
 
-      // El balance se mantiene intacto porque el `require` en el banco revirtió la deducción
       expect(balanceInBank).to.equal(depositAmount);
       expect(bankActualEtherBalance).to.equal(depositAmount);
       
