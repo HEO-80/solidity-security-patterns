@@ -25,6 +25,7 @@ each with a vulnerable version, a secure fix, and a full test suite that proves 
 
 </div>
 
+![Solidity Security Patterns](./assets/security-pattern.gif)
 ---
 
 ## 💼 Looking to hire?
@@ -62,10 +63,10 @@ but *how they get exploited* — you're in the right place.
 | 04 | [Front-Running](./contracts/04-front-running/) | 🟠 High | ✅ Done |
 | 05 | [Gas Griefing](./contracts/05-gas-griefing/) | 🟠 High | ✅ Done |
 | 06 | [Flash Loan Attack](./contracts/06-flash-loan-attack/) | 🔴 Critical | ✅ Done |
-| 07 | [Unchecked Return Values](./contracts/07-unchecked-return/) | 🟠 High | ⏳ Soon |
-| 08 | [Timestamp Dependence](./contracts/08-timestamp-dependence/) | 🟡 Medium | ⏳ Soon |
-| 09 | [Delegatecall Injection](./contracts/09-delegatecall/) | 🔴 Critical | ⏳ Soon |
-| 10 | [Oracle Manipulation](./contracts/10-oracle-manipulation/) | 🔴 Critical | ⏳ Soon |
+| 07 | [Unchecked Return Values](./contracts/07-unchecked-return/) | 🟠 High | ✅ Done |
+| 08 | [Timestamp Dependence](./contracts/08-timestamp-dependence/) | 🟡 Medium | ✅ Done |
+| 09 | [Delegatecall Injection](./contracts/09-delegatecall/) | 🔴 Critical | ✅ Done |
+| 10 | [Oracle Manipulation](./contracts/10-oracle-manipulation/) | 🔴 Critical | ✅ Done |
 
 ---
 
