@@ -25,6 +25,7 @@ each with a vulnerable version, a secure fix, and a full test suite that proves 
 
 </div>
 
+![Solidity Security Patterns](./assets/security-pattern.gif)
 ---
 
 ## 💼 Looking to hire?
